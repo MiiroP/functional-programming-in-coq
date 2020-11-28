@@ -1561,16 +1561,11 @@ Qed.
 
 Fixpoint eqb_list {A : Type} (eqb : A -> A -> bool)
          (l1 l2 : list A) : bool :=
-  match l1 with
-  | [] => match l2 with
-          | [] => true
-          | _ => false
-          end
-  | h1 :: t1 => match l2 with
-                | [] => false
-                | h2 :: t2 => (andb (eqb h1 h2)
-                                    (eqb_list eqb t1 t2))
-                end
+  match l1, l2 with
+  | [], [] => true
+  | [], _ => false
+  | _, [] => false
+  | h1 :: t1, h2 :: t2 => (eqb h1 h2) && (eqb_list eqb t1 t2)
   end.
 
 Theorem eqb_list_true_iff :
@@ -1579,9 +1574,26 @@ Theorem eqb_list_true_iff :
     forall l1 l2, eqb_list eqb l1 l2 = true <-> l1 = l2.
 Proof.
   intros A eqb H l1 l2. split.
-  - generalize dependent l2. induction l1 as [| h1 l1' IHl1'].
-    + 
-    
+  - generalize dependent l1. induction l2 as [| h2 l2' IHl2'].
+    + intros. destruct l1 as [| h1 l1'].
+      * reflexivity.
+      * discriminate.
+    + intros l1 H1. destruct l1 as [| h1 l1'].
+      * simpl. discriminate.
+      * simpl in H1. apply andb_true_iff in H1. destruct H1 as [Heq Heql].
+        rewrite -> H in Heq. rewrite -> Heq.
+        apply IHl2' in Heql. rewrite -> Heql.
+        reflexivity.
+  - generalize dependent l1. induction l2 as [| h2 l2' IHl2'].
+    + intros l1 H1. destruct l1 as [| h1 l1'].
+      * simpl. reflexivity.
+      * simpl. discriminate.
+    + intros l1 H1. destruct l1 as [| h1 l1'].
+      * simpl. discriminate.
+      * simpl. apply andb_true_iff. split.
+        { inversion H1. rewrite -> H. reflexivity. }
+        { inversion H1. apply IHl2'. reflexivity. }
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard, especially useful (All_forallb) 
@@ -1601,7 +1613,18 @@ Fixpoint forallb {X : Type} (test : X -> bool) (l : list X) : bool :=
 Theorem forallb_true_iff : forall X test (l : list X),
    forallb test l = true <-> All (fun x => test x = true) l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros X test l. split.
+  - induction l as [| h l' IHl'].
+    + simpl. trivial.
+    + simpl. rewrite -> andb_true_iff. intros [H1 H2]. split.
+      * apply H1.
+      * apply IHl'. apply H2.
+  - induction l as [| h l' IHl'].
+    + simpl. trivial.
+    + simpl. intros [H1 H2]. rewrite -> andb_true_iff. split.
+      * apply H1.
+      * apply IHl'. apply H2.
+Qed.
 
 (** (Ungraded thought question) Are there any important properties of
     the function [forallb] which are not captured by this
@@ -1747,7 +1770,8 @@ Theorem excluded_middle_irrefutable: forall (P:Prop),
   ~ ~ (P \/ ~ P).
 Proof.
   unfold not. intros P H.
-  (* FILL IN HERE *) Admitted.
+  apply H. right. intros HP. apply H. left. apply HP.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, advanced (not_exists_dist) 
@@ -1765,10 +1789,18 @@ Proof.
 
 Theorem not_exists_dist :
   excluded_middle ->
-  forall (X:Type) (P : X -> Prop),
-    ~ (exists x, ~ P x) -> (forall x, P x).
+  forall (X: Type) (P : X -> Prop),
+    ~ (exists x : X, ~ P x) -> forall x : X, P x.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  unfold excluded_middle. intros Hem X P H x.
+  unfold not in Hem. unfold not in H.
+  assert (HPx : P x \/ (P x -> False)).
+  { apply Hem. }
+  destruct HPx as [HT | HF].
+  - apply HT.
+  - destruct H. exists x. apply HF.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 5 stars, standard, optional (classical_axioms) 
@@ -1788,19 +1820,70 @@ Proof.
     all. *)
 
 Definition peirce := forall P Q: Prop,
-  ((P->Q)->P)->P.
+    ((P->Q)->P)->P.
 
 Definition double_negation_elimination := forall P:Prop,
-  ~~P -> P.
+    ~~P -> P.
 
 Definition de_morgan_not_and_not := forall P Q:Prop,
-  ~(~P /\ ~Q) -> P\/Q.
+    ~(~P /\ ~Q) -> P\/Q.
 
 Definition implies_to_or := forall P Q:Prop,
-  (P->Q) -> (~P\/Q).
+    (P->Q) -> (~P\/Q).
 
+Theorem peirce_implies_double_negation_elimination :
+  peirce -> double_negation_elimination.
+Proof.
+  unfold peirce. unfold double_negation_elimination. intros H1 P H2.
+  apply (H1 P False). intros H3. unfold not in H2.
+  apply H2 in H3. destruct H3.
+Qed.
+
+Theorem double_negation_elimination_implies_de_morgan :
+  double_negation_elimination -> de_morgan_not_and_not.
+Proof.
+  unfold double_negation_elimination. unfold de_morgan_not_and_not.
+  intros H1 P Q H2. apply H1. unfold not. unfold not in H2.
+  intros H3. apply H2. split.
+  - intros HP. apply H3. left. apply HP.
+  - intros HQ. apply H3. right. apply HQ.
+Qed.
+
+Theorem de_morgan_not_and_not_implies_implies_to_or :
+  de_morgan_not_and_not -> implies_to_or.
+Proof.
+  unfold de_morgan_not_and_not. unfold implies_to_or. intros H1 P Q H2.
+  apply H1. unfold not. intros [H3 H4].
+  apply H3. intros HP. apply H4. apply H2. apply HP.
+Qed.
+
+Theorem implies_to_or_implies_excluded_middle :
+  implies_to_or -> excluded_middle.
+Proof.
+  unfold implies_to_or. unfold excluded_middle. intros H1 P.
+  apply or_commut. apply H1. trivial.
+Qed.
+
+Lemma neg_P_implies_P_to_Q : forall (P : Prop),
+    ~ P -> (forall (Q : Prop), P -> Q).
+Proof.
+  intros P HNP Q HP. unfold not in HNP.
+  apply HNP in HP. destruct HP.
+Qed.
+
+Theorem excluded_middle_implies_peirce :
+  excluded_middle -> peirce.
+Proof.
+  unfold excluded_middle. unfold peirce. intros H1 P Q H2.
+  assert (H3 : P \/ ~ P).
+  { apply H1. }
+  destruct H3.
+  - apply H.
+  - apply H2. apply neg_P_implies_P_to_Q. apply H.
+Qed.
 (* FILL IN HERE
 
     [] *)
 
 (* 2020-09-09 20:51 *)
+
