@@ -37,7 +37,7 @@ Proof.
       * right. apply IH. apply H.
 Qed.
 
-Theorem or_true_iff : forall b1 b2,
+Theorem orb_true_iff : forall b1 b2,
     b1 || b2 = true <-> b1 = true \/ b2 = true.
 Proof.
   intros. split.
@@ -55,7 +55,7 @@ Search excluded_middle.
 
 Theorem not_exists_dist :
   excluded_middle -> forall (X: Type) (P : X -> Prop),
-    ~ (exists x : X, ~ P x) -> forall x : X, P x.
+    ~ (exists x, ~ P x) -> (forall x, P x).
 Proof.
   unfold excluded_middle. intros Hem X P H x.
   unfold not in Hem. unfold not in H.
@@ -65,3 +65,5 @@ Proof.
   - apply HT.
   - destruct H. exists x. apply HF.
 Qed.
+
+
