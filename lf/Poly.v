@@ -460,21 +460,33 @@ Module Exercises.
   Proof. simpl. reflexivity. Qed.
 
   Module Church.
-    Definition nat := forall X : Type, (X -> X) -> X -> X.
+    Definition cnat := forall X : Type, (X -> X) -> X -> X.
 
-    Definition one : nat :=
+    Definition one : cnat :=
       fun (X : Type) (f : X -> X) (x : X) => f x.
 
-    Definition two : nat :=
+    Definition two : cnat :=
       fun (X : Type) (f : X -> X) (x : X) => f (f x).
 
-    Definition zero : nat :=
+    Definition zero : cnat :=
       fun (X : Type) (f : X -> X) (x : X) => x.
 
-    Definition three : nat := @doit3times.
+    Definition three : cnat := @doit3times.
 
-    Definition succ (n : nat) : nat :=
+    Definition succ (n : cnat) : cnat :=
       fun X f x => n X f (f x).
+
+    Fixpoint nat_to_cnat (n: nat) : cnat :=
+      match n with
+      | 0 => fun (X : Type) (f : X -> X) (x : X) => x
+      | S n' => fun (X : Type) (f : X -> X) (x : X) => (nat_to_cnat n') X f (f x)
+      end.
+
+    Compute nat_to_cnat 0 : cnat.
+
+    Compute nat_to_cnat 1 : cnat.
+
+    Compute nat_to_cnat 2 : cnat.
 
     Example succ_1 : succ zero = one.
     Proof. simpl. reflexivity. Qed.
@@ -485,7 +497,7 @@ Module Exercises.
     Example succ_3 : succ two = three.
     Proof. simpl. reflexivity. Qed.
 
-    Definition plus (n m : nat) : nat :=
+    Definition plus (n m : cnat) : cnat :=
       fun X f x => n X f (m X f x).
 
     Example plus_1 : plus zero one = one.
@@ -498,7 +510,7 @@ Module Exercises.
       plus (plus two two) three = plus one (plus three three).
     Proof. simpl. reflexivity. Qed.
 
-    Definition mult (n m : nat) : nat :=
+    Definition mult (n m : cnat) : cnat :=
       fun X f x => n X (m X f) x.
 
     Example mult_1 : mult one one = one.
@@ -510,7 +522,7 @@ Module Exercises.
     Example mult_3 : mult two three = plus three three.
     Proof. simpl. reflexivity. Qed.
 
-    Definition exp (n m : nat) : nat :=
+    Definition exp (n m : cnat) : cnat :=
       fun X => m (X -> X) (n X).
     Example exp_1 : exp two two = plus two two.
     Proof. simpl. reflexivity. Qed.

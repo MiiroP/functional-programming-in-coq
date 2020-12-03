@@ -141,6 +141,7 @@ Proof. apply ev_SS. apply ev_SS. apply ev_0. Qed.
 
 (** ... or we can use function application syntax: *)
 
+(** Here hides the Curry-Howard isomorphism. *)
 Theorem ev_4' : ev 4.
 Proof. apply (ev_SS 2 (ev_SS 0 ev_0)). Qed.
 
@@ -156,7 +157,10 @@ Qed.
 Theorem ev_double : forall n,
   ev (double n).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n. induction n as [| n' IHn'].
+  - simpl. apply ev_0.
+  - simpl. apply ev_SS. apply IHn'.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -323,7 +327,10 @@ Theorem one_not_even' : ~ ev 1.
 Theorem SSSSev__even : forall n,
   ev (S (S (S (S n)))) -> ev n.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n E. inversion E as [| n' E' Heq1].
+  inversion E' as [| n'' E'' Heq2].
+  apply E''.
+Qed.
 (** [] *)
 
 (** **** Exercise: 1 star, standard (ev5_nonsense) 
@@ -333,7 +340,8 @@ Proof.
 Theorem ev5_nonsense :
   ev 5 -> 2 + 2 = 9.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros H. inversion H. inversion H1. inversion H3.
+Qed.
 (** [] *)
 
 (** The [inversion] tactic does quite a bit of work. For
@@ -492,7 +500,10 @@ Qed.
 (** **** Exercise: 2 stars, standard (ev_sum)  *)
 Theorem ev_sum : forall n m, ev n -> ev m -> ev (n + m).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m En Em. induction En as [| n' En' IHEn'].
+  - simpl. apply Em.
+  - simpl. apply ev_SS. apply IHEn'.
+Qed.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced, optional (ev'_ev) 
