@@ -1,3 +1,6 @@
 *.vos
 *.vio
 *.glob
+*.aux
+makefile
+makefile.conf

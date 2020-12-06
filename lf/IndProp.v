@@ -751,7 +751,7 @@ Theorem add_le_cases : forall n m p q,
 Proof.
   intros n m p q LE. generalize dependent p. induction n as [| n' IHn'].
   - intros p. left. apply O_le_n.
-  - intros p H. 
+  - intros p H. Abort.
 
 Theorem lt_S : forall n m,
   n < m ->
@@ -822,8 +822,6 @@ Inductive R : nat -> nat -> nat -> Prop :=
 
 (* FILL IN HERE *)
 
-(* Do not modify the following line: *)
-Definition manual_grade_for_R_provability : option (nat*string) := None.
 (** [] *)
 
 (** **** Exercise: 3 stars, standard, optional (R_fact) 
@@ -1767,8 +1765,6 @@ Example test_nostutter_4:      not (nostutter [3;1;1;4]).
   contradiction; auto. Qed.
 *)
 
-(* Do not modify the following line: *)
-Definition manual_grade_for_nostutter : option (nat*string) := None.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced (filter_challenge) 
@@ -1804,8 +1800,6 @@ Definition manual_grade_for_nostutter : option (nat*string) := None.
 
 (* FILL IN HERE *)
 
-(* Do not modify the following line: *)
-Definition manual_grade_for_filter_challenge : option (nat*string) := None.
 (** [] *)
 
 (** **** Exercise: 5 stars, advanced, optional (filter_challenge_2) 
@@ -1844,8 +1838,6 @@ Definition manual_grade_for_filter_challenge : option (nat*string) := None.
 
 (* FILL IN HERE *)
 
-(* Do not modify the following line: *)
-Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (nat*string) := None.
 (** [] *)
 
 (** **** Exercise: 5 stars, standard, optional (palindrome_converse) 
@@ -1894,8 +1886,6 @@ Definition manual_grade_for_pal_pal_app_rev_pal_rev : option (nat*string) := Non
 
 (* FILL IN HERE *)
 
-(* Do not modify the following line: *)
-Definition manual_grade_for_NoDup_disjoint_etc : option (nat*string) := None.
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced, optional (pigeonhole_principle) 
@@ -1920,9 +1910,6 @@ Proof.
 Inductive repeats {X:Type} : list X -> Prop :=
   (* FILL IN HERE *)
 .
-
-(* Do not modify the following line: *)
-Definition manual_grade_for_check_repeats : option (nat*string) := None.
 
 (** Now, here's a way to formalize the pigeonhole principle.  Suppose
     list [l2] represents a list of pigeonhole labels, and list [l1]
