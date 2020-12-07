@@ -659,14 +659,15 @@ Inductive next_ev : nat -> nat -> Prop :=
     Define an inductive binary relation [total_relation] that holds
     between every pair of natural numbers. *)
 
-(* FILL IN HERE
-
-    [] *)
+Inductive total_relation : nat -> nat -> Prop :=
+  | total n m : total_relation n m.
 
 (** **** Exercise: 2 stars, standard, optional (empty_relation) 
 
     Define an inductive binary relation [empty_relation] (on numbers)
     that never holds. *)
+
+Inductive empty_relation : nat -> nat -> Prop :=.
 
 (* FILL IN HERE
 
@@ -749,26 +750,53 @@ Qed.
 Theorem add_le_cases : forall n m p q,
     n + m <= p + q -> n <= p \/ m <= q.
 Proof.
-  intros n m p q LE. generalize dependent p. induction n as [| n' IHn'].
-  - intros p. left. apply O_le_n.
-  - intros p H. Abort.
+  intros n m p q LE. generalize dependent p.
+  induction n as [| n' IHn'].
+  - left. apply O_le_n.
+  - intros p H. destruct p as [| p'].
+    + simpl in H. right. apply le_trans with (n := (S (n' + m))).
+      * apply le_S. rewrite plus_comm. apply le_plus_l.
+      * apply H.
+    + simpl in H. apply Sn_le_Sm__n_le_m in H. apply IHn' in H.
+      destruct H as [H | H].
+      * left. apply n_le_m__Sn_le_Sm. apply H.
+      * right. apply H.
+Qed.
 
 Theorem lt_S : forall n m,
   n < m ->
   n < S m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m H. unfold lt in H. unfold lt.
+  apply le_trans with (n := m). apply H. apply le_S. apply le_n.
+Qed.
 
 Theorem plus_lt : forall n1 n2 m,
   n1 + n2 < m ->
   n1 < m /\ n2 < m.
 Proof.
-(* FILL IN HERE *) Admitted.
+  unfold lt. intros n1 n2 m H. split.
+  - apply le_trans with (n := (S (n1 + n2))). 
+    + apply n_le_m__Sn_le_Sm. apply le_plus_l.
+    + apply H.
+  - apply le_trans with (n := (S (n1 + n2))).
+    + apply n_le_m__Sn_le_Sm. rewrite plus_comm. apply le_plus_l.
+    + apply H.
+Qed.
 
 Theorem leb_complete : forall n m,
   n <=? m = true -> n <= m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m H. generalize dependent n.
+  induction m as [| m' IHm'].
+  - intros n H. destruct n as [| n'].
+    + apply le_n.
+    + simpl in H. discriminate.
+  - intros n H. destruct n as [| n'].
+    + apply O_le_n.
+    + apply n_le_m__Sn_le_Sm. apply IHm'.
+      inversion H. reflexivity.
+Qed.
 
 (** Hint: The next one may be easiest to prove by induction on [m]. *)
 
@@ -776,21 +804,36 @@ Theorem leb_correct : forall n m,
   n <= m ->
   n <=? m = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m H. generalize dependent n.
+  induction m as [| m' IHm'].
+  - intros n H. destruct n as [| n'].
+    + simpl. reflexivity.
+    + inversion H.
+  - intros n H. destruct n as [| n'].
+    + simpl. reflexivity.
+    + simpl. apply IHm'. apply Sn_le_Sm__n_le_m. apply H.
+Qed.
+
 
 (** Hint: The next one can easily be proved without using [induction]. *)
 
 Theorem leb_true_trans : forall n m o,
   n <=? m = true -> m <=? o = true -> n <=? o = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros n m o Lnm Lmo.
+  apply leb_correct. apply leb_complete in Lnm. apply leb_complete in Lmo.
+  apply le_trans with (n := m). apply Lnm. apply Lmo.
+Qed.
 (** [] *)
 
 (** **** Exercise: 2 stars, standard, optional (leb_iff)  *)
 Theorem leb_iff : forall n m,
   n <=? m = true <-> n <= m.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. split.
+  - apply leb_complete.
+  - apply leb_correct.
+Qed.
 (** [] *)
 
 Module R.
@@ -830,12 +873,10 @@ Inductive R : nat -> nat -> nat -> Prop :=
     Figure out which function; then state and prove this equivalence
     in Coq? *)
 
-Definition fR : nat -> nat -> nat
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition fR : nat -> nat -> nat := plus.
 
 Theorem R_equiv_fR : forall m n o, R m n o <-> fR m n = o.
-Proof.
-(* FILL IN HERE *) Admitted.
+Proof. Admitted.
 (** [] *)
 
 End R.
