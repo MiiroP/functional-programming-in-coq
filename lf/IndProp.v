@@ -873,13 +873,36 @@ Inductive R : nat -> nat -> nat -> Prop :=
     Figure out which function; then state and prove this equivalence
     in Coq? *)
 
-Definition fR : nat -> nat -> nat := plus.
+Definition fR : nat -> nat -> nat := fun m n => m + n.
+
+Lemma R_O_n_n : forall (n : nat), R 0 n n.
+Proof.
+  intros. induction n as [| n' IHn'].
+  - apply c1.
+  - apply c3 in IHn'. apply IHn'.
+Qed.
 
 Theorem R_equiv_fR : forall m n o, R m n o <-> fR m n = o.
-Proof. Admitted.
+Proof.
+  intros n m o. unfold fR. split.
+  - intros H. induction H.
+    + simpl. reflexivity.
+    + simpl. rewrite -> IHR. reflexivity.
+    + rewrite <- plus_n_Sm. rewrite IHR. reflexivity.
+    + simpl in IHR. rewrite <- plus_n_Sm in IHR.
+      inversion IHR. reflexivity.
+    + rewrite -> plus_comm. apply IHR.
+  - generalize dependent m. generalize dependent o.
+    induction n as [| n' IHn'].
+    + intros. simpl in H. rewrite H. apply R_O_n_n.
+    + intros. destruct o as [| o'].
+      * inversion H.
+      * apply c2. apply IHn'. 
+        simpl in H. inversion H. reflexivity.
+Qed.
 (** [] *)
-
 End R.
+
 
 (** **** Exercise: 2 stars, advanced (subsequence) 
 
@@ -919,25 +942,45 @@ End R.
       Hint: choose your induction carefully! *)
 
 Inductive subseq : list nat -> list nat -> Prop :=
-(* FILL IN HERE *)
-.
+  | ss0 (l : list nat) : subseq [] l
+  | ss1 (h : nat) (l1 l2 : list nat) (H : subseq l1 l2) : subseq (h :: l1) (h :: l2)
+  | ss2 (h : nat) (l1 l2 : list nat) (H : subseq l1 l2) : subseq l1 (h :: l2).
 
 Theorem subseq_refl : forall (l : list nat), subseq l l.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros l. induction l as [| h l' IHl'].
+  - apply ss0.
+  - apply (ss1 h). apply IHl'.
+Qed.
 
 Theorem subseq_app : forall (l1 l2 l3 : list nat),
   subseq l1 l2 ->
   subseq l1 (l2 ++ l3).
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. generalize dependent l1.
+  induction l2 as [| h2 l2' IHl2'].
+  - intros. inversion H. apply ss0.
+  - intros. simpl. inversion H.
+    + apply ss0.
+    + apply (ss1 h2). apply IHl2'. apply H2.
+    + apply (ss2 h2). apply IHl2'. apply H2.
+Qed. 
 
 Theorem subseq_trans : forall (l1 l2 l3 : list nat),
   subseq l1 l2 ->
   subseq l2 l3 ->
   subseq l1 l3.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. generalize dependent l1.
+  induction H0.
+  - intros. inversion H. apply ss0.
+  - intros. inversion H.
+    + apply ss0.
+    + apply ss1. apply IHsubseq. apply H3.
+    + apply ss2. apply IHsubseq. apply H3.
+  - intros. apply ss2. apply IHsubseq. apply H.
+Qed.
+
 (** [] *)
 
 (** **** Exercise: 2 stars, standard, optional (R_provability2) 
