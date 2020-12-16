@@ -326,8 +326,7 @@ Theorem t_update_permute : forall (A : Type) (m : total_map A)
     =
     (x2 !-> v2 ; x1 !-> v1 ; m).
 Proof.
-  intros A m v1 v2 x1 x2.
-Abort.
+Admitted.
 (** [] *)
 
 (* ################################################################# *)

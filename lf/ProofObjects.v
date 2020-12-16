@@ -94,6 +94,8 @@ Print ev_4.
 Check (ev_SS 2 (ev_SS 0 ev_0))
   : ev 4.
 
+Check ev_0.
+
 (** The expression [ev_SS 2 (ev_SS 0 ev_0)] can be thought of as
     instantiating the parameterized constructor [ev_SS] with the
     specific arguments [2] and [0] plus the corresponding proof
@@ -178,10 +180,10 @@ Print ev_4'''.
 
 Theorem ev_8 : ev 8.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  apply (ev_SS 6 (ev_SS 4 (ev_SS 2 (ev_SS 0 ev_0)))).
+Qed.
 
-Definition ev_8' : ev 8
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition ev_8' : ev 8 := (ev_SS 6 (ev_SS 4 ev_4)).
 (** [] *)
 
 (* ################################################################# *)
@@ -205,6 +207,12 @@ Proof.
   apply ev_SS.
   apply ev_SS.
   apply H.
+  Show Proof.
+Qed.
+
+Theorem ev_plus4_my : forall n, ev n -> ev (4 + n).
+Proof.
+  apply (fun (n : nat) (H : ev n) => ev_SS (S (S n)) (ev_SS n H)).
 Qed.
 
 (** What is the proof object corresponding to [ev_plus4]?
@@ -362,6 +370,15 @@ Proof.
   Show Proof.
 Qed.
 
+Theorem proj1'' : forall P Q,
+  P /\ Q -> P.
+Proof. apply
+(fun P Q HPQ =>
+  match HPQ with
+  | conj HP _ => HP
+  end).
+Qed.
+
 (** Similarly, the [split] tactic actually works for any inductively
     defined proposition with exactly one constructor.  In particular,
     it works for [and]: *)
@@ -375,6 +392,15 @@ Proof.
   - intros [HQ HP]. split.
     + apply HP.
     + apply HQ.
+  Show Proof.
+Qed.
+
+Lemma and_comm'' : forall P Q : Prop, P /\ Q -> Q /\ P.
+Proof. apply
+(fun P Q HPQ =>
+  match HPQ with
+  | conj HP HQ => conj HQ HP
+  end).
 Qed.
 
 End And.
