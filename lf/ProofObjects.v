@@ -421,8 +421,18 @@ Definition and_comm' P Q : P /\ Q <-> Q /\ P :=
 
     Construct a proof object for the following proposition. *)
 
-Definition conj_fact : forall P Q R, P /\ Q -> Q /\ R -> P /\ R
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition conj_fact : forall P Q R, P /\ Q -> Q /\ R -> P /\ R :=
+  fun P Q R HPQ HQR =>
+  match HPQ with
+  | conj HP _ =>
+    match HQR with
+    | conj _ HR => conj HP HR
+    end
+  end.
+
+Goal forall P Q R, P /\ Q -> Q /\ R -> P /\ R.
+Proof. apply conj_fact. Qed.
+
 (** [] *)
 
 (* ================================================================= *)
@@ -470,6 +480,7 @@ Proof.
   destruct HPQ as [HP | HQ].
   - apply HPR. apply HP.
   - apply HQR. apply HQ.
+  Show Proof.
 Qed.
 
 End Or.
@@ -478,8 +489,16 @@ End Or.
 
     Construct a proof object for the following proposition. *)
 
-Definition or_commut' : forall P Q, P \/ Q -> Q \/ P
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition or_commut' : forall P Q, P \/ Q -> Q \/ P :=
+  fun P Q HPQ =>
+    match HPQ with
+    | or_introl HP => or_intror HP
+    | or_intror HQ => or_introl HQ
+    end.
+
+Goal forall P Q, P \/ Q -> Q \/ P.
+Proof. apply or_commut'. Qed.
+
 (** [] *)
 
 (* ================================================================= *)
@@ -513,6 +532,8 @@ End Ex.
 (** The more familiar form [exists x, P x] desugars to an expression
     involving [ex]: *)
 
+Check ex.
+
 Check ex (fun n => ev n) : Prop.
 
 (** Here's how to define an explicit proof object involving [ex]: *)
@@ -520,12 +541,15 @@ Check ex (fun n => ev n) : Prop.
 Definition some_nat_is_even : exists n, ev n :=
   ex_intro ev 4 (ev_SS 2 (ev_SS 0 ev_0)).
 
+Definition some_nat_is_even' : ex (fun n => ev n) :=
+  ex_intro ev 4 (ev_SS 2 (ev_SS 0 ev_0)).
+
 (** **** Exercise: 2 stars, standard (ex_ev_Sn) 
 
     Construct a proof object for the following proposition. *)
 
-Definition ex_ev_Sn : ex (fun n => ev (S n))
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition ex_ev_Sn : ex (fun n => ev (S n)) :=
+  ex_intro (fun n => ev (S n)) 1 (ev_SS 0 ev_0).
 (** [] *)
 
 (* ================================================================= *)
@@ -543,8 +567,8 @@ Inductive True : Prop :=
 
     Construct a proof object for the following proposition. *)
 
-Definition p_implies_true : forall P, P -> True
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition p_implies_true : forall P, P -> True :=
+  fun P HP => I.
 (** [] *)
 
 (** [False] is equally simple -- indeed, so simple it may look
@@ -578,8 +602,8 @@ Definition false_implies_zero_eq_one : False -> 0 = 1 :=
 
     Construct a proof object for the following proposition. *)
 
-Definition ex_falso_quodlibet' : forall P, False -> P
-  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+Definition ex_falso_quodlibet' : forall P, False -> P :=
+  fun P contra => match contra with end.
 (** [] *)
 
 End Props.
@@ -652,7 +676,9 @@ Definition singleton : forall (X:Type) (x:X), []++[x] == x::[]  :=
 Lemma equality__leibniz_equality : forall (X : Type) (x y: X),
   x == y -> forall P:X->Prop, P x -> P y.
 Proof.
-(* FILL IN HERE *) Admitted.
+  intros X x y Heq P HPx. destruct Heq.
+  apply HPx.
+Qed.
 (** [] *)
 
 (** **** Exercise: 3 stars, standard, optional (leibniz_equality__equality) 
@@ -665,8 +691,9 @@ Proof.
 Lemma leibniz_equality__equality : forall (X : Type) (x y: X),
   (forall P:X->Prop, P x -> P y) -> x == y.
 Proof.
-(* FILL IN HERE *) Admitted.
-
+  intros X x y H. apply H with (P := eq x).
+  apply (eq_refl x).
+Qed.
 (** [] *)
 
 End MyEquality.
