@@ -7,3 +7,5 @@ Tactics.v
 Logic.v
 IndProp.v
 Maps.v
+ProofObjects.v
+
