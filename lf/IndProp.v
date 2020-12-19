@@ -1364,8 +1364,8 @@ Qed.
     regular expression matches some string. Prove that your function
     is correct. *)
 
-Fixpoint re_not_empty {T : Type} (re : reg_exp T) : bool :=
-  .
+Fixpoint re_not_empty {T : Type} (re : reg_exp T) : bool.
+Admitted.
 
 Lemma re_not_empty_correct : forall T (re : reg_exp T),
   (exists s, s =~ re) <-> re_not_empty re = true.
