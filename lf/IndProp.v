@@ -1554,7 +1554,28 @@ Lemma MStar'' : forall T (s : list T) (re : reg_exp T),
     s = fold app ss []
     /\ forall s', In s' ss -> s' =~ re.
 Proof.
-  Admitted.
+  intros. remember (Star re) as reS.
+  induction H
+    as [|x'|s1 re1 s2' re2 Hmatch1 IH1 Hmatch2 IH2
+        |s1 re1 re2 Hmatch IH|re1 s2' re2 Hmatch IH
+        |re''|s1 s2' re'' Hmatch1 IH1 Hmatch2 IH2].
+  - inversion HeqreS.
+  - inversion HeqreS.
+  - inversion HeqreS.
+  - inversion HeqreS.
+  - inversion HeqreS.
+  - injection HeqreS as Heq.
+    exists []. split.
+    + reflexivity.
+    + intros. inversion H.
+  - apply IH2 in HeqreS as Heqre. destruct Heqre as [ss [H1 H2]].
+    exists (s1 :: ss). split.
+    + simpl. rewrite H1. reflexivity.
+    + injection HeqreS as Heq.
+      intros. inversion H.
+      * rewrite <- H0. rewrite -> Heq in Hmatch1. apply Hmatch1.
+      * apply H2. apply H0.
+Qed.
 (** [] *)
 
 (** **** Exercise: 5 stars, advanced (weak_pumping) 
@@ -1688,7 +1709,12 @@ Proof.
        | re | s1 s2 re Hmatch1 IH1 Hmatch2 IH2 ].
   - (* MEmpty *)
     simpl. intros contra. inversion contra.
-  (* FILL IN HERE *) Admitted.
+  - (* MChar *)
+    simpl. intros contra. 
+    inversion contra as [|n contra' Eq].
+    inversion contra'.
+  - (* MApp *)
+Abort.
 (** [] *)
 
 (** **** Exercise: 5 stars, advanced, optional (pumping) 
