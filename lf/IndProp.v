@@ -1364,13 +1364,57 @@ Qed.
     regular expression matches some string. Prove that your function
     is correct. *)
 
-Fixpoint re_not_empty {T : Type} (re : reg_exp T) : bool.
-Admitted.
+Print reg_exp.
+
+Fixpoint re_not_empty {T : Type} (re : reg_exp T) : bool :=
+  match re with
+  | EmptySet => false
+  | EmptyStr => true
+  | Char _ => true
+  | App re1 re2 => (andb (re_not_empty re1)
+                         (re_not_empty re2))
+  | Union re1 re2 => (orb (re_not_empty re1)
+                          (re_not_empty re2))
+  | Star _ => true
+  end.
 
 Lemma re_not_empty_correct : forall T (re : reg_exp T),
   (exists s, s =~ re) <-> re_not_empty re = true.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  intros. split.
+  - intros [s0 Hs0].
+    induction Hs0
+      as [| x'
+          | s1 re1 s2 re2 Hmatch1 IH1 Hmatch2 IH2
+          | s1 re1 re2 Hmatch IH | re1 s2 re2 Hmatch IH
+          | re | s1 s2 re Hmatch1 IH1 Hmatch2 IH2].
+    + simpl. reflexivity.
+    + simpl. reflexivity.
+    + simpl. rewrite IH1. rewrite IH2. reflexivity.
+    + simpl. rewrite IH. reflexivity.
+    + simpl. rewrite IH. destruct (re_not_empty re1).
+      * reflexivity.
+      * reflexivity.
+    + simpl. reflexivity.
+    + simpl. reflexivity.
+  - intros. induction re.
+    + simpl in H. discriminate.
+    + exists []. apply MEmpty.
+    + exists [t]. apply MChar.
+    + simpl in H. rewrite andb_true_iff in H.
+      destruct H as [H1 H2].
+      apply IHre1 in H1. apply IHre2 in H2.
+      destruct H1 as [s1 H1]. destruct H2 as [s2 H2].
+      exists (s1 ++ s2). apply (MApp s1 re1 s2 re2 H1 H2).
+    + simpl in H. rewrite orb_true_iff in H.
+      destruct H as [H1 | H2].
+      * apply IHre1 in H1. destruct H1 as [s1 H1].
+        exists s1. apply (MUnionL s1 re1 re2 H1).
+      * apply IHre2 in H2. destruct H2 as [s2 H2].
+        exists s2. apply (MUnionR re1 s2 re2 H2).
+    + exists []. apply MStar0.
+Qed.
+
 (** [] *)
 
 (* ================================================================= *)
@@ -1510,7 +1554,7 @@ Lemma MStar'' : forall T (s : list T) (re : reg_exp T),
     s = fold app ss []
     /\ forall s', In s' ss -> s' =~ re.
 Proof.
-  (* FILL IN HERE *) Admitted.
+  Admitted.
 (** [] *)
 
 (** **** Exercise: 5 stars, advanced (weak_pumping) 
