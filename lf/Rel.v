@@ -250,9 +250,8 @@ Proof.
   unfold not. intros n.
   induction n as [| n'].
   - intros. inversion H.
-  - intros. inversion H.
-    + apply IHn'. apply le_S_n. apply H.
-    + apply IHn'. apply le_S_n. apply H.
+  - intros. apply IHn'.
+    apply le_S_n. apply H.
 Qed.
 (** [] *)
 
